@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <h2> JSPang.com 断网提醒测试 </h2>
+
+
+  <button id="notifyBtn">通知消息</button>
+
+</body>
+<script>
+  window.addEventListener('online', function () {
+    alert('官人，我来了，我们继续哦！')
+  })
+
+  window.addEventListener('offline', function () {
+    alert('小女子先行离开一会，请稍等！')
+  })
+
+
+  var notifyBtn = document.getElementById('notifyBtn');
+
+  var option = {
+    title: '小二,来订单了，出来接客了!',
+    body: '有大官人刚翻了你的牌子',
+  }
+  notifyBtn.onclick = function () {
+    new window.Notification(option.title, option)
+  }
+</script>
+
+</html>

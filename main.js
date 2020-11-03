@@ -1,43 +1,92 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow, BrowserView, globalShortcut } = require('electron')
 const path = require('path')
 
-function createWindow () {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
-    }
+// 全屏显示
+function createWindow1() {
+  let size = require('electron').screen.getPrimaryDisplay().workAreaSize
+  let width = parseInt(size.width)
+  console.log(width)
+  if (width >= 1920) {
+    // 全屏显示
+    mainWindow = new BrowserWindow({
+      fullscreenable: true,
+      fullscreen: true,
+      autoHideMenuBar: true
+    })
+  } else {
+    let height = parseInt(1080 * size.width / 1920 + 30)
+    mainWindow = new BrowserWindow({
+      width: width,
+      height: height,
+      fullscreenable: false,
+      fullscreen: true,
+      autoHideMenuBar: true
+    })
+  }
+
+  // 注册的都是全局的快捷键
+  globalShortcut.register('ctrl+e', () => {
+    mainWindow.loadURL('https://jspang.com')
   })
 
-  // and load the index.html of the app.
-  mainWindow.loadFile('index.html')
+  //检测全局快捷键是否注册成功
+  let isRegister = globalShortcut.isRegistered('ctrl+e') ? 'Register Success' : 'Register fail'
+  console.log('------->' + isRegister)
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
+
+  mainWindow.loadURL('http://localhost:20081/home')
+
+  // var view = new BrowserView()   //new出对象
+  // mainWindow.setBrowserView(view)   // 在主窗口中设置view可用
+  // view.setBounds({ x: 0, y: 0, width: 1900, height: 1500 })  //定义view的具体样式和位置
+  // // view.webContents.loadURL('https://jspang.com')  //wiew载入的页面
+
+  // view.webContents.loadURL('http://localhost:20081/home')  //wiew载入的页面
+
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
+
+function createWindow2() {
+  const mainWindow = new BrowserWindow(
+    {
+      width: 1900,
+      height: 1500,
+      webPreferences: {
+        enableRemoteModule: true, //渲染进程可以使用require('electron').remote的remote进程
+        nodeIntegration: true, // 渲染进程可以使用require加载模块
+        preload: path.join(__dirname, 'preload.js')
+      }
+    }
+  )
+  // mainWindow.loadURL('http://localhost:20081/home')
+  var view = new BrowserView()   //new出对象
+  mainWindow.setBrowserView(view)   // 在主窗口中设置view可用
+  view.setBounds({ x: 0, y: 0, width: 1900, height: 1500 })  //定义view的具体样式和位置
+  view.webContents.loadURL('https://jspang.com')  //wiew载入的页面
+
+  view.webContents.loadURL('http://localhost:20081/home')  //wiew载入的页面
+}
+
 app.whenReady().then(() => {
-  createWindow()
-  
+  createWindow1()
   app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
 app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit()
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+
+app.on('will-quit',function(){
+  //注销全局快捷键的监听
+  globalShortcut.unregister('ctrl+e')
+  globalShortcut.unregisterAll()
+})
+
+
+
